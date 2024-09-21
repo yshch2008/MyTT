@@ -7,7 +7,7 @@
 # V2.7  2021-11-21 修正 SLOPE,BARSLAST,函数,新加FILTER,LONGCROSS, 感谢qzhjiang对SLOPE,SMA等函数的指正
 # V2.8  2021-11-23 修正 FORCAST,WMA函数,欢迎qzhjiang,stanene,bcq加入社群，一起来完善myTT库
 # V2.9  2021-11-29 新增 HHVBARS,LLVBARS,CONST, VALUEWHEN功能函数
-# V2.92 2021-11-30 新增 BARSSINCEN函数,现在可以 pip install MyTT 完成安装   
+# V2.92 2021-11-30 新增 BARSSINCEN 函数,现在可以 pip install MyTT 完成安装   
 # V3.0  2021-12-04 改进 DMA函数支持序列,新增XS2 薛斯通道II指标
 # V3.1  2021-12-19 新增 TOPRANGE,LOWRANGE一级函数 
 # V3.2  2023-04-04 新增 CR指标
@@ -43,7 +43,15 @@ def DIFF(S, N=1):         #前一个值减后一个值,前面会产生nan
 def STD(S,N):             #求序列的N日标准差，返回序列    
     return  pd.Series(S).rolling(N).std(ddof=0).values     
 
-def SUM(S, N):            #对序列求N天累计和，返回序列    N=0对序列所有依次求和         
+def SUM(S, N):            #对序列求N天累计和，返回序列    N=0对序列所有依次求和    
+    if isinstance(N, (int, float)):
+        return pd.Series(S).rolling(N).sum().values if N>0 else pd.Series(S).cumsum().values  
+    else:
+        res = np.repeat(np.nan, len(S))
+        for i in range(len(S)):
+            if (not np.isnan(N[i])) and N[i] <= i + 1:
+                res[i] = S[i + 1 - N[i]:i + 1].sum()
+        return res     
     return pd.Series(S).rolling(N).sum().values if N>0 else pd.Series(S).cumsum().values  
 
 def CONST(S):             #返回序列S最后的值组成常量序列
